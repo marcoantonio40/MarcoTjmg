@@ -14,5 +14,7 @@ public class ConfigProperties {
     @Value("${file.atualizacao.txt}")
     private String fileTxt;
 
+    @Value("${file.atualizacao.xls}")
+    private String fileXls;
 
 }

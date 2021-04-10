@@ -110,7 +110,7 @@ public class PatternServiceImpl implements PatternService {
             createRestamentAnyYear(monthsDouble, restatement, restatementId);
             repository.save(restatement);
         }
-    }//teste
+    }
 
     private void createRestamentAnyYear(Double[] monthsDouble, Restatement restatement, RestatementId restatementId) {
         restatement.setRestatementId(restatementId);
