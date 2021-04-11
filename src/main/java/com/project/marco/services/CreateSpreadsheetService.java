@@ -6,5 +6,5 @@ import org.springframework.http.HttpStatus;
 import java.io.IOException;
 
 public interface CreateSpreadsheetService {
-    HttpStatus createSpreadsheet() throws IOException, WriteException;
+    HttpStatus createSpreadsheet();
 }

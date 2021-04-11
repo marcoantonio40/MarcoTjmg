@@ -41,7 +41,7 @@ public class MainController {
 	}
 
 	@GetMapping(value = "/createSpreadsheet")
-	public HttpStatus createSpreadsheet() throws IOException, WriteException {
+	public HttpStatus createSpreadsheet() {
 		return createSpreadsheetService.createSpreadsheet();
 	}
 
