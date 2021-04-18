@@ -1,6 +1,8 @@
 package com.project.marco.services.impl;
 
 import com.project.marco.config.ConfigProperties;
+import com.project.marco.model.SavingsIndexEntity;
+import com.project.marco.model.SavingsIndexId;
 import com.project.marco.repository.SavingsIndexRepository;
 import com.project.marco.services.CreateSpreadsheetService;
 import com.project.marco.services.SavingsIndexService;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
@@ -66,8 +69,40 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
         savingsIndexService.savingsIndex();
 
+        makeCalc(sheet);
+
     }
 
+    private void makeCalc(WritableSheet sheet) throws WriteException {
+
+        SavingsIndexId savingsIndexId = new SavingsIndexId();
+        savingsIndexId.setAno("1994");
+        savingsIndexId.setMes("04");
+
+        Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
+        SavingsIndexId savingsIndexId2 = byId.get().getSavingsIndexId();
+        Double value = byId.get().getValue();
+        String data = savingsIndexId2.getMes()+"/"+savingsIndexId2.getAno();
+
+        Label label = new Label(0,4, data);
+        sheet.addCell(label);
+        label = new Label(1, 4, "R$");
+        sheet.addCell(label);
+        WritableCell writableCell = sheet.getWritableCell(1, 1);
+        String valueInRealString = writableCell.getContents();
+        label = new Label(2, 4, valueInRealString);
+        sheet.addCell(label);
+        label = new Label(3, 4, value.toString());
+        sheet.addCell(label);
+        Formula formula = new Formula(4,4, "C5 * D5");
+        //label = new Label(4, 4, formula);
+        sheet.addCell(formula);
+
+//        Number number = new Number(5,1,10);
+//        sheet.addCell(number);
+//        Formula formula = new Formula(5,2, "F1 * 3");
+//        sheet.addCell(formula);
+    }
 
 
     private static void createHeader(WritableSheet sheet, Double valorAtualizado, Double reais) throws WriteException {
