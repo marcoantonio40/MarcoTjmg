@@ -8,7 +8,7 @@ import javax.persistence.Id;
 
 @Data
 @Entity
-public class Restatement {
+public class RestatementEntity {
 
     @EmbeddedId
     private RestatementId restatementId;

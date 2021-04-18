@@ -1,10 +1,11 @@
 package com.project.marco.services.impl;
 
 import com.project.marco.config.ConfigProperties;
-import com.project.marco.model.Restatement;
+import com.project.marco.model.RestatementEntity;
 import com.project.marco.model.RestatementId;
 import com.project.marco.repository.RestatementRepository;
 import com.project.marco.services.PatternService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @Service
 public class PatternServiceImpl implements PatternService {
 
@@ -23,9 +25,6 @@ public class PatternServiceImpl implements PatternService {
 
     @Autowired
     private RestatementRepository repository;
-
-    public PatternServiceImpl() {
-    }
 
     @Override
     public HttpStatus formatToPattern() {
@@ -99,40 +98,40 @@ public class PatternServiceImpl implements PatternService {
     }
 
     private void prepareToSave(Double[] monthsDouble, int yearValid) {
-        Restatement restatement = new Restatement();
+        RestatementEntity restatementEntity = new RestatementEntity();
         RestatementId restatementId = createId(yearValid);
         if (yearValid == INIT_YEAR) {
-            createRestament1964(monthsDouble, restatement, restatementId);
-            repository.save(restatement);
+            createRestament1964(monthsDouble, restatementEntity, restatementId);
+            repository.save(restatementEntity);
         } else {
-            createRestamentAnyYear(monthsDouble, restatement, restatementId);
-            repository.save(restatement);
+            createRestamentAnyYear(monthsDouble, restatementEntity, restatementId);
+            repository.save(restatementEntity);
         }
     }
 
-    private void createRestamentAnyYear(Double[] monthsDouble, Restatement restatement, RestatementId restatementId) {
-        restatement.setRestatementId(restatementId);
-        restatement.setJanuary(monthsDouble[0]);
-        restatement.setFebruary(monthsDouble[1] > 0 ? monthsDouble[1] : 0);
-        restatement.setMarch(monthsDouble[2] > 0 ? monthsDouble[2] : 0);
-        restatement.setApril(monthsDouble[3] > 0 ? monthsDouble[3] : 0);
-        restatement.setMay(monthsDouble[4] > 0 ? monthsDouble[4] : 0);
-        restatement.setJune(monthsDouble[5] > 0 ? monthsDouble[5] : 0);
-        restatement.setJuly(monthsDouble[6] > 0 ? monthsDouble[6] : 0);
-        restatement.setAugust(monthsDouble[7] > 0 ? monthsDouble[7] : 0);
-        restatement.setSeptember(monthsDouble[8] > 0 ? monthsDouble[8] : 0);
-        restatement.setOctober(monthsDouble[9] > 0 ? monthsDouble[9] : 0);
-        restatement.setNovember(monthsDouble[10] > 0 ? monthsDouble[10] : 0);
-        restatement.setDecember(monthsDouble[11] > 0 ? monthsDouble[11] : 0);
+    private void createRestamentAnyYear(Double[] monthsDouble, RestatementEntity restatementEntity, RestatementId restatementId) {
+        restatementEntity.setRestatementId(restatementId);
+        restatementEntity.setJanuary(monthsDouble[0]);
+        restatementEntity.setFebruary(monthsDouble[1] > 0 ? monthsDouble[1] : 0);
+        restatementEntity.setMarch(monthsDouble[2] > 0 ? monthsDouble[2] : 0);
+        restatementEntity.setApril(monthsDouble[3] > 0 ? monthsDouble[3] : 0);
+        restatementEntity.setMay(monthsDouble[4] > 0 ? monthsDouble[4] : 0);
+        restatementEntity.setJune(monthsDouble[5] > 0 ? monthsDouble[5] : 0);
+        restatementEntity.setJuly(monthsDouble[6] > 0 ? monthsDouble[6] : 0);
+        restatementEntity.setAugust(monthsDouble[7] > 0 ? monthsDouble[7] : 0);
+        restatementEntity.setSeptember(monthsDouble[8] > 0 ? monthsDouble[8] : 0);
+        restatementEntity.setOctober(monthsDouble[9] > 0 ? monthsDouble[9] : 0);
+        restatementEntity.setNovember(monthsDouble[10] > 0 ? monthsDouble[10] : 0);
+        restatementEntity.setDecember(monthsDouble[11] > 0 ? monthsDouble[11] : 0);
 
 
     }
 
-    private void createRestament1964(Double[] monthsDouble, Restatement restatement, RestatementId restatementId) {
-        restatement.setRestatementId(restatementId);
-        restatement.setOctober(monthsDouble[0]);
-        restatement.setNovember(monthsDouble[1]);
-        restatement.setDecember(monthsDouble[2]);
+    private void createRestament1964(Double[] monthsDouble, RestatementEntity restatementEntity, RestatementId restatementId) {
+        restatementEntity.setRestatementId(restatementId);
+        restatementEntity.setOctober(monthsDouble[0]);
+        restatementEntity.setNovember(monthsDouble[1]);
+        restatementEntity.setDecember(monthsDouble[2]);
     }
 
     private RestatementId createId(int yearValid) {
