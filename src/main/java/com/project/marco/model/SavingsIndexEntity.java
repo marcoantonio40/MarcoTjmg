@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 
 @Data
 @Entity
-public class SavingsIndex {
+public class SavingsIndexEntity {
 
     @EmbeddedId
     private SavingsIndexId savingsIndexId;

@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
 @Embeddable
-public class SavingsIndexId {
+public class SavingsIndexId implements Serializable {
 
     @NotNull
     private String mes;

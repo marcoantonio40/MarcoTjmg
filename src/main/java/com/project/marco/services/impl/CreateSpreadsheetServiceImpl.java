@@ -1,7 +1,9 @@
 package com.project.marco.services.impl;
 
 import com.project.marco.config.ConfigProperties;
+import com.project.marco.repository.SavingsIndexRepository;
 import com.project.marco.services.CreateSpreadsheetService;
+import com.project.marco.services.SavingsIndexService;
 import com.project.marco.util.TjmgUtils;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
@@ -26,6 +28,12 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
     @Autowired
     private TjmgUtils tjmgUtils;
+
+    @Autowired
+    private SavingsIndexService savingsIndexService;
+
+    @Autowired
+    private SavingsIndexRepository savingsIndexRepository;
 
     @Override
     public HttpStatus createSpreadsheet() {
@@ -52,11 +60,15 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         return workbook;
     }
 
-    private static void writeDataSheet(WritableSheet sheet) throws WriteException {
+    private void writeDataSheet(WritableSheet sheet) throws Exception {
 
         createHeader(sheet, 130518.08,47.46 );
 
+        savingsIndexService.savingsIndex();
+
     }
+
+
 
     private static void createHeader(WritableSheet sheet, Double valorAtualizado, Double reais) throws WriteException {
 
