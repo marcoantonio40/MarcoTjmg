@@ -14,6 +14,7 @@ import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.VerticalAlignment;
 import jxl.write.*;
+import jxl.write.Number;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
     private void writeDataSheet(WritableSheet sheet) throws Exception {
 
-        createHeader(sheet, 130518.08,47.46 );
+        createHeader(sheet, 130518.08);
 
         savingsIndexService.savingsIndex();
 
@@ -81,31 +82,37 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
         Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
         SavingsIndexId savingsIndexId2 = byId.get().getSavingsIndexId();
-        Double value = byId.get().getValue();
+        Double index = byId.get().getValue();
         String data = savingsIndexId2.getMes()+"/"+savingsIndexId2.getAno();
 
-        Label label = new Label(0,4, data);
+        WritableCellFormat cellFormatData = new WritableCellFormat();
+        cellFormatData.setAlignment(Alignment.RIGHT);
+
+        Label label = new Label(0,4, data, cellFormatData);
         sheet.addCell(label);
-        label = new Label(1, 4, "R$");
+
+        WritableCellFormat cellFormatCifra = new WritableCellFormat();
+        cellFormatCifra.setAlignment(Alignment.CENTRE);
+
+        label = new Label(1, 4, "R$", cellFormatCifra);
         sheet.addCell(label);
         WritableCell writableCell = sheet.getWritableCell(1, 1);
-        String valueInRealString = writableCell.getContents();
-        label = new Label(2, 4, valueInRealString);
-        sheet.addCell(label);
-        label = new Label(3, 4, value.toString());
-        sheet.addCell(label);
-        Formula formula = new Formula(4,4, "C5 * D5");
-        //label = new Label(4, 4, formula);
+        NumberFormat format = new NumberFormat("#.##");
+        WritableCellFormat cellFormat = new WritableCellFormat(format);
+        Double valueInReal = Double.parseDouble(writableCell.getContents());
+        Number number = new Number(2,4, valueInReal, cellFormat);
+        sheet.addCell(number);
+        number = new Number(3,4,index, cellFormat);
+        sheet.addCell(number);
+        Formula formula = new Formula(4,4, "C5*(D5/100)", cellFormat);
+        sheet.addCell(formula);
+        formula = new Formula(5,4, "E5+C5", cellFormat);
         sheet.addCell(formula);
 
-//        Number number = new Number(5,1,10);
-//        sheet.addCell(number);
-//        Formula formula = new Formula(5,2, "F1 * 3");
-//        sheet.addCell(formula);
     }
 
 
-    private static void createHeader(WritableSheet sheet, Double valorAtualizado, Double reais) throws WriteException {
+    private static void createHeader(WritableSheet sheet, Double valorCruzeiro) throws WriteException {
 
         WritableFont wf = new WritableFont(WritableFont.ARIAL,10, WritableFont.BOLD);
         WritableFont wfNumber = new WritableFont(WritableFont.ARIAL,10, WritableFont.NO_BOLD);
@@ -127,8 +134,15 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         Label l1 = new Label(0,0,"Saldo atualizado em jun/94",cf);
         Label l2 = new Label(1,0,"Conversão de Cruzeiros reais para Reais (Divide-se por 2.750)",cf);
         Label l3 = new Label(2,0,"Base Legal",cf);
-        Label l4 = new Label(0,1,valorAtualizado.toString(), cfNumber);
-        Label l5 = new Label(1,1,reais.toString(), cfNumber);
+
+
+        NumberFormat format = new NumberFormat("#.##");
+        WritableCellFormat cellFormatNumber = new WritableCellFormat(format);
+        Number number = new Number(0,1, valorCruzeiro);
+        sheet.addCell(number);
+        Formula formula = new Formula(1,1, "A2/2750");
+        sheet.addCell(formula);
+
         Label l6 = new Label(2,1,"Leis nº 8880, de 27/05/1994 e 9069, de 29/06/1995",cf);
         Label l7 = new Label(0,3,"Período de rendimento",cf);
         Label l8 = new Label(1,3,"Moeda Vigente no Período",cf);
@@ -157,8 +171,8 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         sheet.addCell(l1);
         sheet.addCell(l2);
         sheet.addCell(l3);
-        sheet.addCell(l4);
-        sheet.addCell(l5);
+
+
         sheet.addCell(l6);
         sheet.addCell(l7);
         sheet.addCell(l8);
