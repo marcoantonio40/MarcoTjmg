@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -76,38 +77,64 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
     private void makeCalc(WritableSheet sheet) throws WriteException {
 
-        SavingsIndexId savingsIndexId = new SavingsIndexId();
-        savingsIndexId.setAno("1994");
-        savingsIndexId.setMes("04");
+//        SavingsIndexId savingsIndexId = new SavingsIndexId();
+//        savingsIndexId.setAno("1994");
+//        savingsIndexId.setMes("04");
+//
+//        Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
+//        SavingsIndexId savingsIndexId2 = byId.get().getSavingsIndexId();
+//        Double index = byId.get().getValue();
+//        String data = savingsIndexId2.getMes()+"/"+savingsIndexId2.getAno();
 
-        Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
-        SavingsIndexId savingsIndexId2 = byId.get().getSavingsIndexId();
-        Double index = byId.get().getValue();
-        String data = savingsIndexId2.getMes()+"/"+savingsIndexId2.getAno();
 
-        WritableCellFormat cellFormatData = new WritableCellFormat();
-        cellFormatData.setAlignment(Alignment.RIGHT);
+        List<SavingsIndexEntity> savingsIndexes = savingsIndexRepository.findAll();
 
-        Label label = new Label(0,4, data, cellFormatData);
-        sheet.addCell(label);
+        int next;
+        int row = 4;
+        int numberRow;
 
-        WritableCellFormat cellFormatCifra = new WritableCellFormat();
-        cellFormatCifra.setAlignment(Alignment.CENTRE);
 
-        label = new Label(1, 4, "R$", cellFormatCifra);
-        sheet.addCell(label);
+//        WritableCellFormat cellFormatData = new WritableCellFormat();
+//        cellFormatData.setAlignment(Alignment.RIGHT);
+//        WritableCellFormat cellFormatCifra = new WritableCellFormat();
+//        cellFormatCifra.setAlignment(Alignment.CENTRE);
         WritableCell writableCell = sheet.getWritableCell(1, 1);
-        NumberFormat format = new NumberFormat("#.##");
-        WritableCellFormat cellFormat = new WritableCellFormat(format);
-        Double valueInReal = Double.parseDouble(writableCell.getContents());
-        Number number = new Number(2,4, valueInReal, cellFormat);
-        sheet.addCell(number);
-        number = new Number(3,4,index, cellFormat);
-        sheet.addCell(number);
-        Formula formula = new Formula(4,4, "C5*(D5/100)", cellFormat);
-        sheet.addCell(formula);
-        formula = new Formula(5,4, "E5+C5", cellFormat);
-        sheet.addCell(formula);
+        //NumberFormat format = new NumberFormat("#.##");
+        //WritableCellFormat cellFormat = new WritableCellFormat(format);
+        //int size = savingsIndexes.size();
+        for(SavingsIndexEntity savingsIndexEntityAux: savingsIndexes){
+            numberRow = row+1;
+            //SavingsIndexEntity savingsIndexEntity = savingsIndexes.get(next);
+            SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
+            String data = savingsIndexId.getMes()+"/"+savingsIndexId.getAno();
+
+            Double value = savingsIndexEntityAux.getValue();
+
+
+
+
+            Label label = new Label(0,row, data);//, cellFormatData
+            sheet.addCell(label);
+
+            label = new Label(1, row, "R$");//, cellFormatCifra
+            sheet.addCell(label);
+
+            Formula formula = new Formula(2,row, writableCell.getContents());//, cellFormat
+            sheet.addCell(formula);
+
+            Number number = new Number(3,row,value);//, cellFormat
+            sheet.addCell(number);
+
+            formula = new Formula(4,row, "C"+numberRow+"*(D"+numberRow+"/100)");//, cellFormat
+            sheet.addCell(formula);
+
+            formula = new Formula(5,row, "E"+numberRow+"+C"+numberRow);//, cellFormat
+            sheet.addCell(formula);
+            row++;
+        }
+
+
+
 
     }
 
@@ -140,7 +167,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         WritableCellFormat cellFormatNumber = new WritableCellFormat(format);
         Number number = new Number(0,1, valorCruzeiro);
         sheet.addCell(number);
-        Formula formula = new Formula(1,1, "A2/2750");
+        Formula formula = new Formula(1,1, "A2/2750", cellFormatNumber);
         sheet.addCell(formula);
 
         Label l6 = new Label(2,1,"Leis nº 8880, de 27/05/1994 e 9069, de 29/06/1995",cf);
