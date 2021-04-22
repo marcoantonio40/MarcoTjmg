@@ -39,8 +39,8 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
         String[] split = linha.split("/");
         SavingsIndexEntity savingsIndexEntity = new SavingsIndexEntity();
         SavingsIndexId savingsIndexId = new SavingsIndexId();
-        savingsIndexId.setMes(split[0]);
-        savingsIndexId.setAno(split[1]);
+        savingsIndexId.setMes(Integer.parseInt(split[0]));
+        savingsIndexId.setAno(Integer.parseInt(split[1]));
         savingsIndexEntity.setSavingsIndexId(savingsIndexId);
         savingsIndexEntity.setValue(Double.parseDouble(split[2]));
         savingsIndexRepository.save(savingsIndexEntity);

@@ -11,8 +11,8 @@ import java.io.Serializable;
 public class SavingsIndexId implements Serializable {
 
     @NotNull
-    private String mes;
+    private int mes;
 
     @NotNull
-    private String ano;
+    private int ano;
 }

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
@@ -89,7 +90,12 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
         List<SavingsIndexEntity> savingsIndexes = savingsIndexRepository.findAll();
 
-        int next;
+        List<SavingsIndexEntity> savingsIndexReal = savingsIndexes
+                .stream()
+                .filter(s -> s.getSavingsIndexId().getAno() > 1993)
+                .filter(s -> !(s.getSavingsIndexId().getAno() == 1994 && s.getSavingsIndexId().getMes() < 6))
+                .collect(Collectors.toList());
+
         int row = 4;
         int numberRow;
 
@@ -99,10 +105,12 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 //        WritableCellFormat cellFormatCifra = new WritableCellFormat();
 //        cellFormatCifra.setAlignment(Alignment.CENTRE);
         WritableCell writableCell = sheet.getWritableCell(1, 1);
-        //NumberFormat format = new NumberFormat("#.##");
-        //WritableCellFormat cellFormat = new WritableCellFormat(format);
+        NumberFormat format2 = new NumberFormat("#.##");
+        WritableCellFormat cellFormat2 = new WritableCellFormat(format2);
+        NumberFormat format4 = new NumberFormat("#.####");
+        WritableCellFormat cellFormat4 = new WritableCellFormat(format4);
         //int size = savingsIndexes.size();
-        for(SavingsIndexEntity savingsIndexEntityAux: savingsIndexes){
+        for(SavingsIndexEntity savingsIndexEntityAux: savingsIndexReal){
             numberRow = row+1;
             //SavingsIndexEntity savingsIndexEntity = savingsIndexes.get(next);
             SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
@@ -119,16 +127,22 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             label = new Label(1, row, "R$");//, cellFormatCifra
             sheet.addCell(label);
 
-            Formula formula = new Formula(2,row, writableCell.getContents());//, cellFormat
-            sheet.addCell(formula);
+            Formula formula;
+            if(row == 4) {
+                formula = new Formula(2, row, writableCell.getContents(), cellFormat2);
+                sheet.addCell(formula);
+            } else {
+                formula = new Formula(2, row, "F"+(numberRow-1)+"+0", cellFormat2);
+                sheet.addCell(formula);
+            }
 
-            Number number = new Number(3,row,value);//, cellFormat
+            Number number = new Number(3,row,value);
             sheet.addCell(number);
 
-            formula = new Formula(4,row, "C"+numberRow+"*(D"+numberRow+"/100)");//, cellFormat
+            formula = new Formula(4,row, "C"+numberRow+"*(D"+numberRow+"/100)", cellFormat2);
             sheet.addCell(formula);
 
-            formula = new Formula(5,row, "E"+numberRow+"+C"+numberRow);//, cellFormat
+            formula = new Formula(5,row, "E"+numberRow+"+C"+numberRow, cellFormat2);
             sheet.addCell(formula);
             row++;
         }
