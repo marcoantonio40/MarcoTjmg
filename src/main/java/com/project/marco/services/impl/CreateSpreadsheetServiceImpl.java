@@ -1,8 +1,11 @@
 package com.project.marco.services.impl;
 
 import com.project.marco.config.ConfigProperties;
+import com.project.marco.config.Meses;
+import com.project.marco.model.RestatementEntity;
 import com.project.marco.model.SavingsIndexEntity;
 import com.project.marco.model.SavingsIndexId;
+import com.project.marco.repository.RestatementRepository;
 import com.project.marco.repository.SavingsIndexRepository;
 import com.project.marco.services.CreateSpreadsheetService;
 import com.project.marco.services.SavingsIndexService;
@@ -41,6 +44,9 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
     @Autowired
     private SavingsIndexRepository savingsIndexRepository;
 
+    @Autowired
+    private RestatementRepository restatementRepository;
+
     @Override
     public HttpStatus createSpreadsheet() {
 
@@ -72,21 +78,17 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
         savingsIndexService.savingsIndex();
 
-        makeCalc(sheet);
+        makeCalc(sheet, 2014, 9);
 
     }
 
-    private void makeCalc(WritableSheet sheet) throws WriteException {
+    private void makeCalc(WritableSheet sheet, int anoInicio, int mesInicio) throws WriteException {
 
-//        SavingsIndexId savingsIndexId = new SavingsIndexId();
-//        savingsIndexId.setAno("1994");
-//        savingsIndexId.setMes("04");
-//
-//        Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
-//        SavingsIndexId savingsIndexId2 = byId.get().getSavingsIndexId();
-//        Double index = byId.get().getValue();
-//        String data = savingsIndexId2.getMes()+"/"+savingsIndexId2.getAno();
-
+        List<RestatementEntity> restatements = restatementRepository.findAll();
+        List<RestatementEntity> restatementsValid = restatements
+                .stream()
+                .filter(r -> (r.getRestatementId().getYearFactor() >= anoInicio))
+                .collect(Collectors.toList());
 
         List<SavingsIndexEntity> savingsIndexes = savingsIndexRepository.findAll();
 
@@ -98,58 +100,76 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
         int row = 4;
         int numberRow;
+        Double value = 1d;
 
-
-//        WritableCellFormat cellFormatData = new WritableCellFormat();
-//        cellFormatData.setAlignment(Alignment.RIGHT);
-//        WritableCellFormat cellFormatCifra = new WritableCellFormat();
-//        cellFormatCifra.setAlignment(Alignment.CENTRE);
+        WritableCellFormat cellFormatCifra = new WritableCellFormat();
+        cellFormatCifra.setAlignment(Alignment.CENTRE);
         WritableCell writableCell = sheet.getWritableCell(1, 1);
         NumberFormat format2 = new NumberFormat("#.##");
         WritableCellFormat cellFormat2 = new WritableCellFormat(format2);
-        NumberFormat format4 = new NumberFormat("#.####");
-        WritableCellFormat cellFormat4 = new WritableCellFormat(format4);
-        //int size = savingsIndexes.size();
+
         for(SavingsIndexEntity savingsIndexEntityAux: savingsIndexReal){
             numberRow = row+1;
-            //SavingsIndexEntity savingsIndexEntity = savingsIndexes.get(next);
             SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
             String data = savingsIndexId.getMes()+"/"+savingsIndexId.getAno();
 
-            Double value = savingsIndexEntityAux.getValue();
-
-
-
-
-            Label label = new Label(0,row, data);//, cellFormatData
-            sheet.addCell(label);
-
-            label = new Label(1, row, "R$");//, cellFormatCifra
-            sheet.addCell(label);
-
-            Formula formula;
-            if(row == 4) {
-                formula = new Formula(2, row, writableCell.getContents(), cellFormat2);
-                sheet.addCell(formula);
-            } else {
-                formula = new Formula(2, row, "F"+(numberRow-1)+"+0", cellFormat2);
-                sheet.addCell(formula);
+            if(!(savingsIndexId.getMes() == 6 && savingsIndexId.getAno() == 1994)){
+                makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
+                if(savingsIndexId.getMes() >= mesInicio && savingsIndexId.getAno() >= anoInicio){
+                    makeCalcFromStartOfLawsuit(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data, restatementsValid);
+                }
+                row++;
             }
 
-            Number number = new Number(3,row,value);
-            sheet.addCell(number);
+            value = savingsIndexEntityAux.getValue();
+        }
+    }
 
-            formula = new Formula(4,row, "C"+numberRow+"*(D"+numberRow+"/100)", cellFormat2);
-            sheet.addCell(formula);
+    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data, List<RestatementEntity> restatementsValid) throws WriteException {
 
-            formula = new Formula(5,row, "E"+numberRow+"+C"+numberRow, cellFormat2);
+        Label label = new Label(0, row, data);
+        sheet.addCell(label);
+
+        label = new Label(1, row, "R$", cellFormatCifra);
+        sheet.addCell(label);
+
+        Formula formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
+        sheet.addCell(formula);
+
+        Number number = new Number(3, row, value);
+        sheet.addCell(number);
+
+        formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
+        sheet.addCell(formula);
+
+        formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
+        sheet.addCell(formula);
+    }
+
+    private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data) throws WriteException {
+        Label label = new Label(0, row, data);
+        sheet.addCell(label);
+
+        label = new Label(1, row, "R$", cellFormatCifra);
+        sheet.addCell(label);
+
+        Formula formula;
+        if(row == 4) {
+            formula = new Formula(2, row, writableCell.getContents(), cellFormat2);
             sheet.addCell(formula);
-            row++;
+        } else {
+            formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
+            sheet.addCell(formula);
         }
 
+        Number number = new Number(3, row, value);
+        sheet.addCell(number);
 
+        formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
+        sheet.addCell(formula);
 
-
+        formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
+        sheet.addCell(formula);
     }
 
 
@@ -175,7 +195,6 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         Label l1 = new Label(0,0,"Saldo atualizado em jun/94",cf);
         Label l2 = new Label(1,0,"Conversão de Cruzeiros reais para Reais (Divide-se por 2.750)",cf);
         Label l3 = new Label(2,0,"Base Legal",cf);
-
 
         NumberFormat format = new NumberFormat("#.##");
         WritableCellFormat cellFormatNumber = new WritableCellFormat(format);
@@ -212,7 +231,6 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         sheet.addCell(l1);
         sheet.addCell(l2);
         sheet.addCell(l3);
-
 
         sheet.addCell(l6);
         sheet.addCell(l7);

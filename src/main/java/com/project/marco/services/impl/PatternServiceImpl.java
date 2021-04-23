@@ -31,9 +31,10 @@ public class PatternServiceImpl implements PatternService {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileTxt()));
             String linha = br.readLine();
-
+            int anoDoc = 2021;
+            int mesDoc = 3;
             while ((linha = br.readLine()) != null) {
-                checksLineIsValid(linha);
+                checksLineIsValid(linha, anoDoc, mesDoc);
             }
 
             br.close();
@@ -43,19 +44,19 @@ public class PatternServiceImpl implements PatternService {
         }
     }
 
-    private void checksLineIsValid(String linha) {
+    private void checksLineIsValid(String linha, int anoDoc, int mesDoc) {
         String year = linha.substring(0, 4);
         try {
             int yearValid = Integer.parseInt(year);
             if (yearValid >= INIT_YEAR && yearValid <= LocalDateTime.now().getYear()) {
-                extractToRestatement(linha, yearValid);
+                extractToRestatement(linha, yearValid, anoDoc, mesDoc);
             }
         } catch (Exception e) {
         }
 
     }
 
-    private void extractToRestatement(String linha, int yearValid) {
+    private void extractToRestatement(String linha, int yearValid, int anoDoc, int mesDoc) {
         int x = 0;
         String newLineWithoutYearsWithComma = linha.substring(5, (linha.length() - 5));
         String newLineWithoutYearsWithPoint = newLineWithoutYearsWithComma.replace(",", ".");
@@ -64,7 +65,7 @@ public class PatternServiceImpl implements PatternService {
             monthsString = fillVector(monthsString);
         }
         Double[] monthsDouble = toDouble(monthsString);
-        prepareToSave(monthsDouble, yearValid);
+        prepareToSave(monthsDouble, yearValid, anoDoc, mesDoc);
 
     }
 
@@ -97,9 +98,9 @@ public class PatternServiceImpl implements PatternService {
         return monthsDouble;
     }
 
-    private void prepareToSave(Double[] monthsDouble, int yearValid) {
+    private void prepareToSave(Double[] monthsDouble, int yearValid, int anoDoc, int mesDoc) {
         RestatementEntity restatementEntity = new RestatementEntity();
-        RestatementId restatementId = createId(yearValid);
+        RestatementId restatementId = createId(yearValid, anoDoc, mesDoc);
         if (yearValid == INIT_YEAR) {
             createRestament1964(monthsDouble, restatementEntity, restatementId);
             repository.save(restatementEntity);
@@ -134,12 +135,12 @@ public class PatternServiceImpl implements PatternService {
         restatementEntity.setDecember(monthsDouble[2]);
     }
 
-    private RestatementId createId(int yearValid) {
+    private RestatementId createId(int yearValid, int anoDoc, int mesDoc) {
         try {
             RestatementId restatementId = new RestatementId();
             restatementId.setYearFactor(yearValid);
-            restatementId.setMonthDoc(4);
-            restatementId.setYearDoc(2021);
+            restatementId.setMonthDoc(mesDoc);
+            restatementId.setYearDoc(anoDoc);
             return restatementId;
         } catch (Exception e) {
             System.out.println(e.getMessage());
