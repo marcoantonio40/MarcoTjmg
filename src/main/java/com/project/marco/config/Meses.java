@@ -6,7 +6,6 @@ import lombok.Getter;
 public enum Meses {
 
 
-
     JANUARY(1, "January"),
     FEBRUARY(2, "February"),
     MARCH(3, "March"),
@@ -24,15 +23,15 @@ public enum Meses {
     private String mesString;
 
 
-    Meses(int mesInt, String mesString){
+    Meses(int mesInt, String mesString) {
         this.mesInt = mesInt;
         this.mesString = mesString;
     }
 
-    public String getMesString(int mesNumber){
+    public String getMesString(int mesNumber) {
         Meses[] values = this.values();
-        for(Meses mes: values){
-            if(mes.getMesInt() == mesNumber){
+        for (Meses mes : values) {
+            if (mes.getMesInt() == mesNumber) {
                 return mes.getMesString();
             }
         }

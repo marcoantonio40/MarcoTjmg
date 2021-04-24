@@ -1,7 +1,6 @@
 package com.project.marco.services.impl;
 
 import com.project.marco.config.ConfigProperties;
-import com.project.marco.config.Meses;
 import com.project.marco.model.RestatementEntity;
 import com.project.marco.model.SavingsIndexEntity;
 import com.project.marco.model.SavingsIndexId;
@@ -16,8 +15,8 @@ import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.format.VerticalAlignment;
-import jxl.write.*;
 import jxl.write.Number;
+import jxl.write.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,11 +25,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
+
+    private static final int MONTH_START_REAL = 6;
+    private static final int YEAR_START_REAL = 1994;
+    int index = 0;
+    boolean firstIteration = true;
 
     @Autowired
     private ConfigProperties configProperties;
@@ -50,7 +53,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
     @Override
     public HttpStatus createSpreadsheet() {
 
-        try{
+        try {
             String filename = tjmgUtils.createNameFile(configProperties.getFileXls());
 
             WritableWorkbook workbook = setConfigSreadSheet(filename);
@@ -59,7 +62,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             workbook.write();
             workbook.close();
             return HttpStatus.OK;
-        } catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.NOT_FOUND;
         }
 
@@ -87,10 +90,10 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         List<RestatementEntity> restatements = restatementRepository.findAll();
         List<RestatementEntity> restatementsValid = restatements
                 .stream()
-                .filter(r -> (r.getRestatementId().getYearFactor() >= anoInicio))
+                .filter(r -> r.getRestatementId().getYearFactor() >= anoInicio)
+                .filter(r -> !(r.getRestatementId().getYearFactor() == anoInicio && r.getRestatementId().getMes() < mesInicio))
                 .collect(Collectors.toList());
 
-        restatementsValidCorrect(restatementsValid, anoInicio, mesInicio);
 
         List<SavingsIndexEntity> savingsIndexes = savingsIndexRepository.findAll();
 
@@ -110,15 +113,18 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         NumberFormat format2 = new NumberFormat("#.##");
         WritableCellFormat cellFormat2 = new WritableCellFormat(format2);
 
-        for(SavingsIndexEntity savingsIndexEntityAux: savingsIndexReal){
-            numberRow = row+1;
-            SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
-            String data = savingsIndexId.getMes()+"/"+savingsIndexId.getAno();
 
-            if(!(savingsIndexId.getMes() == 6 && savingsIndexId.getAno() == 1994)){
+        for (SavingsIndexEntity savingsIndexEntityAux : savingsIndexReal) {
+            numberRow = row + 1;
+            SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
+            String data = savingsIndexId.getMes() + "/" + savingsIndexId.getAno();
+
+            if (!(savingsIndexId.getMes() == MONTH_START_REAL && savingsIndexId.getAno() == YEAR_START_REAL)) {
                 makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
-                if(savingsIndexId.getMes() >= mesInicio && savingsIndexId.getAno() >= anoInicio){
-                    makeCalcFromStartOfLawsuit(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data, restatementsValid, mesInicio);
+                if (savingsIndexId.getAno() >= anoInicio) {
+                    makeCalcFromStartOfLawsuit(sheet, row, numberRow,
+                            value, cellFormatCifra, cellFormat2, data,
+                            restatementsValid.get(index).getFactorMes(), firstIteration, savingsIndexId.getAno(), savingsIndexId.getMes(), anoInicio, mesInicio);
                 }
                 row++;
             }
@@ -127,66 +133,64 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         }
     }
 
-    private void restatementsValidCorrect(List<RestatementEntity> restatementsValid, int anoInicio, int mesInicio) {
-        if(mesInicio == 1){
-            List<RestatementEntity> restatementsValid2 = restatementsValid
-                    .stream()
-                    .filter(r -> (r.getRestatementId().getYearFactor() == anoInicio) && (r.january) )
-                    .collect(Collectors.toList());
+    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value,
+                                            WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2,
+                                            String data, Double factorMes, boolean firstIteration, int anoFluxo,
+                                            int mesFluxo, int anoInicio, int mesInicio) throws WriteException {
 
+
+        if (anoFluxo == anoInicio) {
+            if (mesFluxo == mesInicio) {
+                index++;
+                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
+
+            } else if (mesFluxo > mesInicio) {
+                index++;
+                firstIteration = false;
+                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
+
+            }
+        } else {
+            index++;
+            firstIteration = false;
+            makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
         }
 
     }
 
-    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value,
-                                            WritableCellFormat cellFormatCifra, WritableCell writableCell,
-                                            WritableCellFormat cellFormat2, String data, List<RestatementEntity> restatementsValid,
-                                            int mesInicio) throws WriteException {
+    private void makeCalcFromStartOfLawsuitFact(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2, String data, Double factorMes, boolean firstIteration) throws WriteException {
+        Label label = new Label(0, row, data);
+        sheet.addCell(label);
 
-        Meses mes = null;
-        int startYear = 0;
-        for(RestatementEntity restatementEntity : restatementsValid){
+        label = new Label(1, row, "R$", cellFormatCifra);
+        sheet.addCell(label);
 
-            for(int start = 1; start <= 12; start++){
-                if(!(start < mesInicio) || startYear == 1){
-                    Label label = new Label(0, row, data);
-                    sheet.addCell(label);
-
-                    label = new Label(1, row, "R$", cellFormatCifra);
-                    sheet.addCell(label);
-
-                    Formula formula;
-                    if(startYear ==0){
-                        formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
-                        sheet.addCell(formula);
-                    } else {
-                        formula = new Formula(2, row, "I"+(numberRow -1)+"+0", cellFormat2);
-                        sheet.addCell(formula);
-                    }
-
-                    Number number = new Number(3, row, value);
-                    sheet.addCell(number);
-
-                    formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
-                    sheet.addCell(formula);
-
-                    formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
-                    sheet.addCell(formula);
-
-
-
-
-
-
-                    number = new Number(6, row, restatementEntity )
-
-                    startYear = 1;
-                }
-            }
+        Formula formula;
+        if (firstIteration) {
+            formula = new Formula(2, row, "F" + (numberRow - 1) + "+0", cellFormat2);
+            sheet.addCell(formula);
+        } else {
+            formula = new Formula(2, row, "I" + (numberRow - 1) + "+0", cellFormat2);
+            sheet.addCell(formula);
         }
 
+        Number number = new Number(3, row, value);
+        sheet.addCell(number);
 
+        formula = new Formula(4, row, "C" + numberRow + "*(D" + numberRow + "/100)", cellFormat2);
+        sheet.addCell(formula);
 
+        formula = new Formula(5, row, "E" + numberRow + "+C" + numberRow, cellFormat2);
+        sheet.addCell(formula);
+
+        number = new Number(6, row, factorMes);
+        sheet.addCell(number);
+
+        formula = new Formula(7, row, "F" + numberRow + "*(G" + numberRow + "/100)", cellFormat2);
+        sheet.addCell(formula);
+
+        formula = new Formula(8, row, "F" + numberRow + "+H" + numberRow, cellFormat2);
+        sheet.addCell(formula);
     }
 
     private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data) throws WriteException {
@@ -197,29 +201,29 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         sheet.addCell(label);
 
         Formula formula;
-        if(row == 4) {
+        if (row == 4) {
             formula = new Formula(2, row, writableCell.getContents(), cellFormat2);
             sheet.addCell(formula);
         } else {
-            formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
+            formula = new Formula(2, row, "F" + (numberRow - 1) + "+0", cellFormat2);
             sheet.addCell(formula);
         }
 
         Number number = new Number(3, row, value);
         sheet.addCell(number);
 
-        formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
+        formula = new Formula(4, row, "C" + numberRow + "*(D" + numberRow + "/100)", cellFormat2);
         sheet.addCell(formula);
 
-        formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
+        formula = new Formula(5, row, "E" + numberRow + "+C" + numberRow, cellFormat2);
         sheet.addCell(formula);
     }
 
 
     private static void createHeader(WritableSheet sheet, Double valorCruzeiro) throws WriteException {
 
-        WritableFont wf = new WritableFont(WritableFont.ARIAL,10, WritableFont.BOLD);
-        WritableFont wfNumber = new WritableFont(WritableFont.ARIAL,10, WritableFont.NO_BOLD);
+        WritableFont wf = new WritableFont(WritableFont.ARIAL, 10, WritableFont.BOLD);
+        WritableFont wfNumber = new WritableFont(WritableFont.ARIAL, 10, WritableFont.NO_BOLD);
 
         WritableCellFormat cf = new WritableCellFormat(wf);
         WritableCellFormat cfNumber = new WritableCellFormat(wfNumber);
@@ -235,30 +239,30 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         cf.setWrap(true);
         cfNumber.setWrap(true);
 
-        Label l1 = new Label(0,0,"Saldo atualizado em jun/94",cf);
-        Label l2 = new Label(1,0,"Conversão de Cruzeiros reais para Reais (Divide-se por 2.750)",cf);
-        Label l3 = new Label(2,0,"Base Legal",cf);
+        Label l1 = new Label(0, 0, "Saldo atualizado em jun/94", cf);
+        Label l2 = new Label(1, 0, "Conversão de Cruzeiros reais para Reais (Divide-se por 2.750)", cf);
+        Label l3 = new Label(2, 0, "Base Legal", cf);
 
         NumberFormat format = new NumberFormat("#.##");
         WritableCellFormat cellFormatNumber = new WritableCellFormat(format);
-        Number number = new Number(0,1, valorCruzeiro);
+        Number number = new Number(0, 1, valorCruzeiro);
         sheet.addCell(number);
-        Formula formula = new Formula(1,1, "A2/2750", cellFormatNumber);
+        Formula formula = new Formula(1, 1, "A2/2750", cellFormatNumber);
         sheet.addCell(formula);
 
-        Label l6 = new Label(2,1,"Leis nº 8880, de 27/05/1994 e 9069, de 29/06/1995",cf);
-        Label l7 = new Label(0,3,"Período de rendimento",cf);
-        Label l8 = new Label(1,3,"Moeda Vigente no Período",cf);
-        Label l9 = new Label(2,3,"Valor Base de Cálculo",cf);
-        Label l10 = new Label(3,3,"Rendimento (%)",cf);
-        Label l11 = new Label(4,3,"Rendimento a partir do valor base",cf);
-        Label l12 = new Label(5,3,"Saldo Atualizado",cf);
-        Label l13 = new Label(6,3,"% Correção Monetária",cf);
-        Label l14 = new Label(7,3,"Valor Correção",cf);
-        Label l15 = new Label(8,3,"Valor Atualizado",cf);
+        Label l6 = new Label(2, 1, "Leis nº 8880, de 27/05/1994 e 9069, de 29/06/1995", cf);
+        Label l7 = new Label(0, 3, "Período de rendimento", cf);
+        Label l8 = new Label(1, 3, "Moeda Vigente no Período", cf);
+        Label l9 = new Label(2, 3, "Valor Base de Cálculo", cf);
+        Label l10 = new Label(3, 3, "Rendimento (%)", cf);
+        Label l11 = new Label(4, 3, "Rendimento a partir do valor base", cf);
+        Label l12 = new Label(5, 3, "Saldo Atualizado", cf);
+        Label l13 = new Label(6, 3, "% Correção Monetária", cf);
+        Label l14 = new Label(7, 3, "Valor Correção", cf);
+        Label l15 = new Label(8, 3, "Valor Atualizado", cf);
 
-        sheet.mergeCells(2,0,5,0);
-        sheet.mergeCells(2,1,5,1);
+        sheet.mergeCells(2, 0, 5, 0);
+        sheet.mergeCells(2, 1, 5, 1);
 
         sheet.setRowView(0, 1200);
         sheet.setRowView(3, 1000);

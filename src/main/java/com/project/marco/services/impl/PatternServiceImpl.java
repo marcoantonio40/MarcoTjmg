@@ -61,7 +61,7 @@ public class PatternServiceImpl implements PatternService {
         String newLineWithoutYearsWithComma = linha.substring(5, (linha.length() - 5));
         String newLineWithoutYearsWithPoint = newLineWithoutYearsWithComma.replace(",", ".");
         String[] monthsString = newLineWithoutYearsWithPoint.split(" ");
-        if(monthsString.length<12){
+        if (monthsString.length < 12) {
             monthsString = fillVector(monthsString);
         }
         Double[] monthsDouble = toDouble(monthsString);
@@ -71,8 +71,8 @@ public class PatternServiceImpl implements PatternService {
 
     private String[] fillVector(String[] monthsString) {
         String[] monthsStringFilled = new String[12];
-        for(int i = 0; i < 12; i++){
-            if(i < monthsString.length){
+        for (int i = 0; i < 12; i++) {
+            if (i < monthsString.length) {
                 monthsStringFilled[i] = monthsString[i];
             } else {
                 monthsStringFilled[i] = "";
@@ -87,7 +87,7 @@ public class PatternServiceImpl implements PatternService {
         Double[] monthsDouble = new Double[12];
 
         for (int i = 0; i < 12; i++) {
-            if(monthsString[i].isEmpty()){
+            if (monthsString[i].isEmpty()) {
                 monthsDouble[i] = 0.0;
             } else {
                 monthsDouble[i] = Double.parseDouble(monthsString[i]);
@@ -103,7 +103,7 @@ public class PatternServiceImpl implements PatternService {
         RestatementId restatementId = createId(yearValid, anoDoc, mesDoc);
         if (yearValid == INIT_YEAR) {
             createRestament1964(monthsDouble, restatementEntity, restatementId);
-            repository.save(restatementEntity);
+
         } else {
             createRestamentAnyYear(monthsDouble, restatementEntity, restatementId);
             repository.save(restatementEntity);
@@ -111,28 +111,23 @@ public class PatternServiceImpl implements PatternService {
     }
 
     private void createRestamentAnyYear(Double[] monthsDouble, RestatementEntity restatementEntity, RestatementId restatementId) {
-        restatementEntity.setRestatementId(restatementId);
-        restatementEntity.setJanuary(monthsDouble[0]);
-        restatementEntity.setFebruary(monthsDouble[1] > 0 ? monthsDouble[1] : 0);
-        restatementEntity.setMarch(monthsDouble[2] > 0 ? monthsDouble[2] : 0);
-        restatementEntity.setApril(monthsDouble[3] > 0 ? monthsDouble[3] : 0);
-        restatementEntity.setMay(monthsDouble[4] > 0 ? monthsDouble[4] : 0);
-        restatementEntity.setJune(monthsDouble[5] > 0 ? monthsDouble[5] : 0);
-        restatementEntity.setJuly(monthsDouble[6] > 0 ? monthsDouble[6] : 0);
-        restatementEntity.setAugust(monthsDouble[7] > 0 ? monthsDouble[7] : 0);
-        restatementEntity.setSeptember(monthsDouble[8] > 0 ? monthsDouble[8] : 0);
-        restatementEntity.setOctober(monthsDouble[9] > 0 ? monthsDouble[9] : 0);
-        restatementEntity.setNovember(monthsDouble[10] > 0 ? monthsDouble[10] : 0);
-        restatementEntity.setDecember(monthsDouble[11] > 0 ? monthsDouble[11] : 0);
+        for (int i = 1; i <= 12; i++) {
+            restatementId.setMes(i);
+            restatementEntity.setRestatementId(restatementId);
+            restatementEntity.setFactorMes(monthsDouble[i - 1]);
+            repository.save(restatementEntity);
+        }
 
 
     }
 
     private void createRestament1964(Double[] monthsDouble, RestatementEntity restatementEntity, RestatementId restatementId) {
-        restatementEntity.setRestatementId(restatementId);
-        restatementEntity.setOctober(monthsDouble[0]);
-        restatementEntity.setNovember(monthsDouble[1]);
-        restatementEntity.setDecember(monthsDouble[2]);
+        for (int i = 10; i <= 12; i++) {
+            restatementId.setMes(i);
+            restatementEntity.setRestatementId(restatementId);
+            restatementEntity.setFactorMes(monthsDouble[i - 10]);
+            repository.save(restatementEntity);
+        }
     }
 
     private RestatementId createId(int yearValid, int anoDoc, int mesDoc) {
@@ -146,7 +141,6 @@ public class PatternServiceImpl implements PatternService {
             System.out.println(e.getMessage());
             return null;
         }
-
 
     }
 
