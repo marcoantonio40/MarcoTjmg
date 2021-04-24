@@ -4,22 +4,39 @@ import lombok.Getter;
 
 @Getter
 public enum Meses {
-    JANUARY(1, "january"),
-    FEBRUARY(2, "february"),
-    MARCH(3, "march"),
-    APRIL(4, "april"),
-    MAY(5, "may"),
-    JUNE(6, "june"),
-    JULY(7, "july"),
-    AUGUST(8, "august"),
-    SEPTEMBER(9, "september"),
-    OCTOBER(10, "october"),
-    NOVEMBER(11, "november"),
-    DECEMBER(12, "december");
 
-    Meses(int mesNumber, String mesString) {
+
+
+    JANUARY(1, "January"),
+    FEBRUARY(2, "February"),
+    MARCH(3, "March"),
+    APRIL(4, "April"),
+    MAY(5, "May"),
+    JUNE(6, "June"),
+    JULY(7, "July"),
+    AUGUST(8, "August"),
+    SEPTEMBER(9, "September"),
+    OCTOBER(10, "October"),
+    NOVEMBER(11, "November"),
+    DECEMBER(12, "December");
+
+    private int mesInt;
+    private String mesString;
+
+
+    Meses(int mesInt, String mesString){
+        this.mesInt = mesInt;
+        this.mesString = mesString;
     }
 
-
+    public String getMesString(int mesNumber){
+        Meses[] values = this.values();
+        for(Meses mes: values){
+            if(mes.getMesInt() == mesNumber){
+                return mes.getMesString();
+            }
+        }
+        return null;
+    }
 
 }

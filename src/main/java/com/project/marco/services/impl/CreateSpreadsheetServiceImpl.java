@@ -90,6 +90,8 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                 .filter(r -> (r.getRestatementId().getYearFactor() >= anoInicio))
                 .collect(Collectors.toList());
 
+        restatementsValidCorrect(restatementsValid, anoInicio, mesInicio);
+
         List<SavingsIndexEntity> savingsIndexes = savingsIndexRepository.findAll();
 
         List<SavingsIndexEntity> savingsIndexReal = savingsIndexes
@@ -116,7 +118,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             if(!(savingsIndexId.getMes() == 6 && savingsIndexId.getAno() == 1994)){
                 makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
                 if(savingsIndexId.getMes() >= mesInicio && savingsIndexId.getAno() >= anoInicio){
-                    makeCalcFromStartOfLawsuit(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data, restatementsValid);
+                    makeCalcFromStartOfLawsuit(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data, restatementsValid, mesInicio);
                 }
                 row++;
             }
@@ -125,25 +127,66 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         }
     }
 
-    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data, List<RestatementEntity> restatementsValid) throws WriteException {
+    private void restatementsValidCorrect(List<RestatementEntity> restatementsValid, int anoInicio, int mesInicio) {
+        if(mesInicio == 1){
+            List<RestatementEntity> restatementsValid2 = restatementsValid
+                    .stream()
+                    .filter(r -> (r.getRestatementId().getYearFactor() == anoInicio) && (r.january) )
+                    .collect(Collectors.toList());
 
-        Label label = new Label(0, row, data);
-        sheet.addCell(label);
+        }
 
-        label = new Label(1, row, "R$", cellFormatCifra);
-        sheet.addCell(label);
+    }
 
-        Formula formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
-        sheet.addCell(formula);
+    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value,
+                                            WritableCellFormat cellFormatCifra, WritableCell writableCell,
+                                            WritableCellFormat cellFormat2, String data, List<RestatementEntity> restatementsValid,
+                                            int mesInicio) throws WriteException {
 
-        Number number = new Number(3, row, value);
-        sheet.addCell(number);
+        Meses mes = null;
+        int startYear = 0;
+        for(RestatementEntity restatementEntity : restatementsValid){
 
-        formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
-        sheet.addCell(formula);
+            for(int start = 1; start <= 12; start++){
+                if(!(start < mesInicio) || startYear == 1){
+                    Label label = new Label(0, row, data);
+                    sheet.addCell(label);
 
-        formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
-        sheet.addCell(formula);
+                    label = new Label(1, row, "R$", cellFormatCifra);
+                    sheet.addCell(label);
+
+                    Formula formula;
+                    if(startYear ==0){
+                        formula = new Formula(2, row, "F"+(numberRow -1)+"+0", cellFormat2);
+                        sheet.addCell(formula);
+                    } else {
+                        formula = new Formula(2, row, "I"+(numberRow -1)+"+0", cellFormat2);
+                        sheet.addCell(formula);
+                    }
+
+                    Number number = new Number(3, row, value);
+                    sheet.addCell(number);
+
+                    formula = new Formula(4, row, "C"+ numberRow +"*(D"+ numberRow +"/100)", cellFormat2);
+                    sheet.addCell(formula);
+
+                    formula = new Formula(5, row, "E"+ numberRow +"+C"+ numberRow, cellFormat2);
+                    sheet.addCell(formula);
+
+
+
+
+
+
+                    number = new Number(6, row, restatementEntity )
+
+                    startYear = 1;
+                }
+            }
+        }
+
+
+
     }
 
     private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data) throws WriteException {

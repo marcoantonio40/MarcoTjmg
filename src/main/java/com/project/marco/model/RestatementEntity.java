@@ -13,18 +13,18 @@ public class RestatementEntity {
     @EmbeddedId
     private RestatementId restatementId;
 
-    private double january;
-    private double february;
-    private double march;
-    private double april;
-    private double may;
-    private double june;
-    private double july;
-    private double august;
-    private double september;
-    private double october;
-    private double november;
-    private double december;
+    public double january;
+    public double february;
+    public double march;
+    public double april;
+    public double may;
+    public double june;
+    public double july;
+    public double august;
+    public double september;
+    public double october;
+    public double november;
+    public double december;
 
 
 

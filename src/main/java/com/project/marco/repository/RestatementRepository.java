@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RestatementRepository extends JpaRepository<RestatementEntity, RestatementId> {
+    Double findByMonth(String mesString, int yearFactor);
 }
