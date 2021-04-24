@@ -3,14 +3,13 @@ package com.project.marco.model;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 import javax.persistence.Embeddable;
-import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Data
 @Embeddable
-public class RestatementId  implements Serializable {
+public class RestatementId implements Serializable {
 
     @NotNull
     private int yearDoc;
@@ -20,4 +19,7 @@ public class RestatementId  implements Serializable {
 
     @NotNull
     private int yearFactor;
+
+    @NotNull
+    private int mes;
 }
