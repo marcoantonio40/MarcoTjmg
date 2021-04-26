@@ -119,18 +119,33 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
             String data = savingsIndexId.getMes() + "/" + savingsIndexId.getAno();
 
+            value = getTaxReferencial(value, savingsIndexId);
+
             if (!(savingsIndexId.getMes() == MONTH_START_REAL && savingsIndexId.getAno() == YEAR_START_REAL)) {
                 makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
                 if (savingsIndexId.getAno() >= anoInicio) {
                     makeCalcFromStartOfLawsuit(sheet, row, numberRow,
                             value, cellFormatCifra, cellFormat2, data,
-                            restatementsValid.get(index).getFactorMes(), firstIteration, savingsIndexId.getAno(), savingsIndexId.getMes(), anoInicio, mesInicio);
+                            restatementsValid.get(index).getFactorMes(),
+                            firstIteration, savingsIndexId.getAno(),
+                            savingsIndexId.getMes(), anoInicio, mesInicio);
                 }
                 row++;
             }
 
             value = savingsIndexEntityAux.getValue();
         }
+    }
+
+    private Double getTaxReferencial(Double value, SavingsIndexId savingsIndexId) {
+        if(savingsIndexId.getAno() == 2017){
+            if(savingsIndexId.getMes() >= 10){
+                value = 0.5d;
+            }
+        } else if(savingsIndexId.getAno() > 2017) {
+            value = 0.5d;
+        }
+        return value;
     }
 
     private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value,
@@ -158,7 +173,10 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
     }
 
-    private void makeCalcFromStartOfLawsuitFact(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2, String data, Double factorMes, boolean firstIteration) throws WriteException {
+    private void makeCalcFromStartOfLawsuitFact(WritableSheet sheet, int row, int numberRow,
+                                                Double value, WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2,
+                                                String data, Double factorMes, boolean firstIteration) throws WriteException {
+
         Label label = new Label(0, row, data);
         sheet.addCell(label);
 
@@ -183,17 +201,22 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         formula = new Formula(5, row, "E" + numberRow + "+C" + numberRow, cellFormat2);
         sheet.addCell(formula);
 
-        number = new Number(6, row, factorMes);
-        sheet.addCell(number);
+        if(!(factorMes == 0)){
+            number = new Number(6, row, factorMes);
+            sheet.addCell(number);
 
-        formula = new Formula(7, row, "F" + numberRow + "*(G" + numberRow + "/100)", cellFormat2);
-        sheet.addCell(formula);
+            formula = new Formula(7, row, "F" + numberRow + "*(G" + numberRow + "/100)", cellFormat2);
+            sheet.addCell(formula);
 
-        formula = new Formula(8, row, "F" + numberRow + "+H" + numberRow, cellFormat2);
-        sheet.addCell(formula);
+            formula = new Formula(8, row, "F" + numberRow + "+H" + numberRow, cellFormat2);
+            sheet.addCell(formula);
+        }
+
     }
 
-    private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow, Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell, WritableCellFormat cellFormat2, String data) throws WriteException {
+    private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow,
+                                  Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell,
+                                  WritableCellFormat cellFormat2, String data) throws WriteException {
         Label label = new Label(0, row, data);
         sheet.addCell(label);
 
