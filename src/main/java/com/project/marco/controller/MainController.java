@@ -7,14 +7,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 @RestController
-@Api(value = "GerarPlanilha")
+@ApiOperation(value = "TJMG Service")
 @RequestMapping("/tjmgMarco")
 public class MainController {
 
@@ -28,9 +29,10 @@ public class MainController {
 	private CreateSpreadsheetService createSpreadsheetService;
 
 
-	@GetMapping(value = "/download")
-    public HttpStatus download() throws IOException {
-	    return tjmgService.downloadPdf();
+	@ApiOperation(value = "Upload PDF do fator de atualização monetária")
+	@PostMapping(value = "/upload")
+    public HttpStatus upload(@RequestParam("Arquivo de atualização monetária") MultipartFile file) throws IOException {
+	    return tjmgService.updloadPdf(file);
     }
 
 	@GetMapping(value = "/readerPdf")
@@ -38,7 +40,6 @@ public class MainController {
 		return tjmgService.readerPdf();
 	}
 
-	@ApiOperation(value = "Realiza o download do PDF")
 	@GetMapping(value = "/formatToPattern")
 	public HttpStatus formatToPattern(){
 		return patternService.formatToPattern();
