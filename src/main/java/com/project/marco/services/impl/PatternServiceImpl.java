@@ -4,6 +4,7 @@ import com.project.marco.config.ConfigProperties;
 import com.project.marco.model.RestatementEntity;
 import com.project.marco.model.RestatementId;
 import com.project.marco.repository.RestatementRepository;
+import com.project.marco.services.CreateSpreadsheetService;
 import com.project.marco.services.PatternService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class PatternServiceImpl implements PatternService {
     @Autowired
     private RestatementRepository repository;
 
+    @Autowired
+    private CreateSpreadsheetService createSpreadsheetService;
+
     @Override
     public HttpStatus formatToPattern() {
         try {
@@ -38,6 +42,7 @@ public class PatternServiceImpl implements PatternService {
             }
 
             br.close();
+            createSpreadsheetService.createSpreadsheet();
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.NOT_FOUND;
