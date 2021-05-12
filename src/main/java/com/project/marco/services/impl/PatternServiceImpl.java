@@ -31,12 +31,10 @@ public class PatternServiceImpl implements PatternService {
     private CreateSpreadsheetService createSpreadsheetService;
 
     @Override
-    public HttpStatus formatToPattern() {
+    public HttpStatus formatToPattern(int anoDoc, int mesDoc) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileTxt()));
             String linha = br.readLine();
-            int anoDoc = 2021;
-            int mesDoc = 3;
             while ((linha = br.readLine()) != null) {
                 checksLineIsValid(linha, anoDoc, mesDoc);
             }

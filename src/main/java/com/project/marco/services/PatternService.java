@@ -4,5 +4,5 @@ import org.springframework.http.HttpStatus;
 
 public interface PatternService {
 
-    HttpStatus formatToPattern();
+    HttpStatus formatToPattern(int anoDoc, int mesDoc);
 }

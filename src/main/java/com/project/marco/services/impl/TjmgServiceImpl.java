@@ -26,11 +26,11 @@ public class TjmgServiceImpl implements TjmgService {
 
 
     @Override
-    public HttpStatus updloadPdf(MultipartFile multipartFile) {
+    public HttpStatus updloadPdf(MultipartFile multipartFile, int anoDoc, int mesDoc) {
         try{
             multipartFile.transferTo(new File(configProperties.getFileDestino()+"/"+multipartFile.getOriginalFilename()));
             File file = new File(configProperties.getFileDestino()+"/"+multipartFile.getOriginalFilename());
-            readerPdf(file.getAbsolutePath());
+            readerPdf(file.getAbsolutePath(), anoDoc, mesDoc );
 
             return HttpStatus.OK;
         } catch (Exception e){
@@ -38,7 +38,8 @@ public class TjmgServiceImpl implements TjmgService {
         }
     }
 
-    public HttpStatus readerPdf(String fileName){
+
+    public HttpStatus readerPdf(String fileName, int anoDoc, int mesDoc){
         PdfReader reader;
         try {
             reader = new PdfReader(fileName);
@@ -54,7 +55,7 @@ public class TjmgServiceImpl implements TjmgService {
 
             bufferWriter.close();
             reader.close();
-            patternService.formatToPattern();
+            patternService.formatToPattern(anoDoc, mesDoc);
             return HttpStatus.OK;
         } catch (IOException e) {
             return HttpStatus.NOT_FOUND;

@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import sun.util.calendar.BaseCalendar;
 import sun.util.calendar.LocalGregorianCalendar;
 
 import java.io.IOException;
 import java.text.Format;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,9 +33,12 @@ public class MainController {
 	@ApiOperation(value = "Upload PDF do fator de atualização monetária")
 	@PostMapping(value = "/upload")
     public HttpStatus upload(@RequestParam("Arquivo de atualização monetária") MultipartFile file,
-							 @RequestParam("Mês e ano do arquivo de atualização monetária")
-							 @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") Date data) throws IOException {
-	    return tjmgService.updloadPdf(file);
+							 @RequestParam("Mês e ano do arquivo de atualização monetária Exemplo de data 2000-10-31 Obs.: O dia pode ser qualquer um")
+							 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) throws IOException {
+
+		Instant instant = data.toInstant();
+		String[] split = instant.toString().split("-");
+		return tjmgService.updloadPdf(file, Integer.parseInt(split[0]), Integer.parseInt(split[1]));
     }
 
 
