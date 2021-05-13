@@ -31,7 +31,7 @@ public class PatternServiceImpl implements PatternService {
     private CreateSpreadsheetService createSpreadsheetService;
 
     @Override
-    public HttpStatus formatToPattern(int anoDoc, int mesDoc) {
+    public HttpStatus formatToPattern(int anoDoc, int mesDoc, int anoInicioProcesso, int mesInicioProcesso) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileTxt()));
             String linha = br.readLine();
@@ -40,7 +40,7 @@ public class PatternServiceImpl implements PatternService {
             }
 
             br.close();
-            createSpreadsheetService.createSpreadsheet();
+            createSpreadsheetService.createSpreadsheet(anoInicioProcesso, mesInicioProcesso);
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.NOT_FOUND;

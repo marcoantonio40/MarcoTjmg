@@ -24,7 +24,7 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
     public void savingsIndex() throws Exception {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileIndex()));
-            String linha = br.readLine();
+            String linha;
 
             while ((linha = br.readLine()) != null) {
                 saveInDb(linha);

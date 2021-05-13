@@ -5,6 +5,7 @@ import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import com.project.marco.config.ConfigProperties;
 import com.project.marco.services.PatternService;
 import com.project.marco.services.TjmgService;
+import com.project.marco.util.TjmgUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,18 @@ public class TjmgServiceImpl implements TjmgService {
     @Autowired
     private PatternService patternService;
 
+    @Autowired
+    private TjmgUtils tjmgUtils;
+
+
 
     @Override
-    public HttpStatus updloadPdf(MultipartFile multipartFile, int anoDoc, int mesDoc) {
+    public HttpStatus updloadPdf(MultipartFile multipartFile, int anoDoc, int mesDoc, int anoInicioProcesso, int mesInicioProcesso) {
         try{
-            multipartFile.transferTo(new File(configProperties.getFileDestino()+"/"+multipartFile.getOriginalFilename()));
+            String nameFile = tjmgUtils.createNameFile(configProperties.getFileDestino()+multipartFile.getOriginalFilename(), ".pdf");
+            multipartFile.transferTo(new File(nameFile));
             File file = new File(configProperties.getFileDestino()+"/"+multipartFile.getOriginalFilename());
-            readerPdf(file.getAbsolutePath(), anoDoc, mesDoc );
+            readerPdf(file.getAbsolutePath(), anoDoc, mesDoc, anoInicioProcesso, mesInicioProcesso );
 
             return HttpStatus.OK;
         } catch (Exception e){
@@ -39,7 +45,7 @@ public class TjmgServiceImpl implements TjmgService {
     }
 
 
-    public HttpStatus readerPdf(String fileName, int anoDoc, int mesDoc){
+    public HttpStatus readerPdf(String fileName, int anoDoc, int mesDoc, int anoInicioProcesso, int mesInicioProcesso){
         PdfReader reader;
         try {
             reader = new PdfReader(fileName);
@@ -55,7 +61,7 @@ public class TjmgServiceImpl implements TjmgService {
 
             bufferWriter.close();
             reader.close();
-            patternService.formatToPattern(anoDoc, mesDoc);
+            patternService.formatToPattern(anoDoc, mesDoc, anoInicioProcesso, mesInicioProcesso);
             return HttpStatus.OK;
         } catch (IOException e) {
             return HttpStatus.NOT_FOUND;

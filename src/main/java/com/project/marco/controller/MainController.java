@@ -33,12 +33,16 @@ public class MainController {
 	@ApiOperation(value = "Upload PDF do fator de atualização monetária")
 	@PostMapping(value = "/upload")
     public HttpStatus upload(@RequestParam("Arquivo de atualização monetária") MultipartFile file,
-							 @RequestParam("Mês e ano do arquivo de atualização monetária Exemplo de data 2000-10-31 Obs.: O dia pode ser qualquer um")
-							 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date data) throws IOException {
+							 @RequestParam("Mês e ano do arquivo de atualização monetária. Exemplo de data: 2000-10-31 Obs.: O dia pode ser qualquer um")
+							 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dataDocumento,
+							 @RequestParam("Mês e ano do início da ação judicial. Exemplo de data: 2000-10-31 Obs.: O dia pode ser qualquer um")
+							 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dataInicioProcesso) throws IOException {
 
-		Instant instant = data.toInstant();
-		String[] split = instant.toString().split("-");
-		return tjmgService.updloadPdf(file, Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+		Instant instant = dataDocumento.toInstant();
+		String[] splitDocumento = instant.toString().split("-");
+		instant = dataInicioProcesso.toInstant();
+		String[] splitInicioProcesso = instant.toString().split("-");
+		return tjmgService.updloadPdf(file, Integer.parseInt(splitDocumento[0]), Integer.parseInt(splitDocumento[1]), Integer.parseInt(splitInicioProcesso[0]), Integer.parseInt(splitInicioProcesso[1]));
     }
 
 

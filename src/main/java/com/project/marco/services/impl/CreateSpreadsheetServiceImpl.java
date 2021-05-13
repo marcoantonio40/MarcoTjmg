@@ -52,14 +52,14 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
     private RestatementRepository restatementRepository;
 
     @Override
-    public HttpStatus createSpreadsheet() {
+    public HttpStatus createSpreadsheet(int anoInicioProcesso, int mesInicioProcesso) {
 
         try {
-            String filename = tjmgUtils.createNameFile(configProperties.getFileXls());
+            String filename = tjmgUtils.createNameFile(configProperties.getFileXls(), ".xls");
 
             WritableWorkbook workbook = setConfigSreadSheet(filename);
             WritableSheet sheet = workbook.createSheet("Folha1", 0);
-            writeDataSheet(sheet);
+            writeDataSheet(sheet, anoInicioProcesso, mesInicioProcesso);
             workbook.write();
             workbook.close();
             return HttpStatus.OK;
@@ -76,24 +76,24 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
         return workbook;
     }
 
-    private void writeDataSheet(WritableSheet sheet) throws Exception {
+    private void writeDataSheet(WritableSheet sheet, int anoInicioProcesso, int mesInicioProcesso) throws Exception {
 
         createHeader(sheet, 130518.08);
 
         savingsIndexService.savingsIndex();
 
-        makeCalc(sheet, 2014, 9);
+        makeCalc(sheet, anoInicioProcesso, mesInicioProcesso);
 
     }
 
-    private void makeCalc(WritableSheet sheet, int anoInicio, int mesInicio) throws Exception {
+    private void makeCalc(WritableSheet sheet, int anoInicioProcesso, int mesInicioProcesso) throws Exception {
 
         try {
             List<RestatementEntity> restatements = restatementRepository.findAll();
             List<RestatementEntity> restatementsValid = restatements
                     .stream()
-                    .filter(r -> r.getRestatementId().getYearFactor() >= anoInicio)
-                    .filter(r -> !(r.getRestatementId().getYearFactor() == anoInicio && r.getRestatementId().getMes() < mesInicio))
+                    .filter(r -> r.getRestatementId().getYearFactor() >= anoInicioProcesso)
+                    .filter(r -> !(r.getRestatementId().getYearFactor() == anoInicioProcesso && r.getRestatementId().getMes() < mesInicioProcesso))
                     .collect(Collectors.toList());
 
 
@@ -125,14 +125,14 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
                 if (!(savingsIndexId.getMes() == MONTH_START_REAL && savingsIndexId.getAno() == YEAR_START_REAL)) {
                     makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
-                    if (savingsIndexId.getAno() >= anoInicio) {
+                    if (savingsIndexId.getAno() >= anoInicioProcesso) {
                         int size = restatementsValid.size();
                         if(index< size){
                             makeCalcFromStartOfLawsuit(sheet, row, numberRow,
                                     value, cellFormatCifra, cellFormat2, data,
                                     restatementsValid.get(index).getFactorMes(),
                                     firstIteration, savingsIndexId.getAno(),
-                                    savingsIndexId.getMes(), anoInicio, mesInicio);
+                                    savingsIndexId.getMes(), anoInicioProcesso, mesInicioProcesso);
                         }
                     }
                     row++;

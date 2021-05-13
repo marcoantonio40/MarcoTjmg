@@ -9,9 +9,9 @@ import java.net.MalformedURLException;
 
 public interface TjmgService {
 
-    HttpStatus updloadPdf(MultipartFile file, int anoDoc, int mesDoc) throws IOException;
+    HttpStatus updloadPdf(MultipartFile file, int anoDoc, int mesDoc, int anoInicioProcesso, int mesInicioProcesso ) throws IOException;
 
-    HttpStatus readerPdf(String fileName, int anoDoc, int mesDoc) ;
+    HttpStatus readerPdf(String fileName, int anoDoc, int mesDoc, int anoInicioProcesso, int mesInicioProcesso) ;
 
 
 }
