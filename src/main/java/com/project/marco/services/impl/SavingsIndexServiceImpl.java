@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 @Service
@@ -35,6 +36,13 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
         }
     }
 
+    @Override
+    public String getLastIndex() throws Exception {
+       savingsIndex();
+       //savingsIndexRepository.getLastIndex();
+       return null;
+    }
+
     private void saveInDb(String linha) throws Exception {
         String[] split = linha.split("/");
         SavingsIndexEntity savingsIndexEntity = new SavingsIndexEntity();
@@ -45,4 +53,6 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
         savingsIndexEntity.setValue(Double.parseDouble(split[2]));
         savingsIndexRepository.save(savingsIndexEntity);
     }
+
+
 }

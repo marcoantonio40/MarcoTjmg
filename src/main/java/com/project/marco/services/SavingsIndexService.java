@@ -5,4 +5,6 @@ import java.io.IOException;
 
 public interface SavingsIndexService {
     void savingsIndex() throws Exception;
+
+    String getLastIndex() throws FileNotFoundException, Exception;
 }
