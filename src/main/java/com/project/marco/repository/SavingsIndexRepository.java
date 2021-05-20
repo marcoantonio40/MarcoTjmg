@@ -14,6 +14,9 @@ import java.util.Optional;
 @Repository
 public interface SavingsIndexRepository extends JpaRepository<SavingsIndexEntity, SavingsIndexId> {
 
-    @Query("select s from SavingsIndexEntity s where s.savingsIndexId.ano in (select max(s2.savingsIndexId.ano) from SavingsIndexEntity s2)")
-    public List<SavingsIndexEntity> getLastIndex();
+    @Query("SELECT s " +
+            "FROM   SavingsIndexEntity s " +
+            "WHERE  s.savingsIndexId.ano IN (SELECT max(sb.savingsIndexId.ano) " +
+            "               FROM   SavingsIndexEntity sb) ")
+   public List<SavingsIndexEntity> getLastIndex();
 }
