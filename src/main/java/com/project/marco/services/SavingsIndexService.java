@@ -7,4 +7,6 @@ public interface SavingsIndexService {
     void savingsIndex() throws Exception;
 
     String getLastIndex() throws FileNotFoundException, Exception;
+
+    String saveSavingsIndex(Integer ano, Integer mes, Float valor) throws Exception;
 }
