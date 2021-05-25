@@ -43,6 +43,8 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
             savingsIndexId.setAno(2000);
             savingsIndexId.setMes(10);
             Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
+
+            SavingsIndexEntity savingsIndexEntity = byId.get();
         }catch (Exception e){
             savingsIndex();
         }
@@ -60,6 +62,8 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
             savingsIndexId.setAno(2000);
             savingsIndexId.setMes(10);
             Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
+
+            SavingsIndexEntity savingsIndexEntity = byId.get();
         }catch (Exception e){
             savingsIndex();
         }
@@ -93,7 +97,14 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
         } else if(mes > 0 && mes < 12){
             if(ano == ultimoAno){
                 if(mes - ultimoMes == 1){
-                    BufferedWriter br = new BufferedWriter(new FileWriter(configProperties.getFileIndex()));
+                    //BufferedWriter bw = new BufferedWriter(new FileWriter(configProperties.getFileIndex()));
+                    FileWriter fileWriter = new FileWriter(configProperties.getFileIndex());
+                    fileWriter.append(mes+"/"+ano+"/"+valor);
+
+
+
+//                    bw.newLine();
+//                    bw.append(mes+"/"+ano+"/"+valor);
                     int x=0;
                 }
             }

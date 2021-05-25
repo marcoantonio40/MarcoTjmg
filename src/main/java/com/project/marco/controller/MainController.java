@@ -55,8 +55,9 @@ public class MainController {
 								   @RequestParam("Ano do novo index. Exemplo 2021") Integer ano,
 								   @RequestParam("Valor do novo index. Exemplo 0.1, 10.0001") Float valor) throws Exception {
 
-		savingsIndexService.saveSavingsIndex(ano, mes, valor);
-		return null;
+
+		String response = savingsIndexService.saveSavingsIndex(ano, mes, valor);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
 
