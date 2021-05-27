@@ -53,7 +53,7 @@ public class MainController {
     @PutMapping(value = "/newIndex")
     public ResponseEntity newIndex(@RequestParam("Mês do novo index. Exemplo 01, 02, ..., 11, 12") Integer mes,
 								   @RequestParam("Ano do novo index. Exemplo 2021") Integer ano,
-								   @RequestParam("Valor do novo index. Exemplo 0.1, 10.0001") Float valor) throws Exception {
+								   @RequestParam("Valor do novo index. Exemplo 0.1, 10.0001") Double valor) throws Exception {
 
 
 		String response = savingsIndexService.saveSavingsIndex(ano, mes, valor);

@@ -31,40 +31,40 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
                 saveInDb(linha);
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception("Exception message");
         }
     }
 
     @Override
     public String getLastIndex() throws Exception {
-        try{
+        try {
             SavingsIndexId savingsIndexId = new SavingsIndexId();
             savingsIndexId.setAno(2000);
             savingsIndexId.setMes(10);
             Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
 
             SavingsIndexEntity savingsIndexEntity = byId.get();
-        }catch (Exception e){
+        } catch (Exception e) {
             savingsIndex();
         }
 
         SavingsIndexEntity savingsIndexEntityBase = getSavingsIndexEntityInDataBase();
 
-        return "Ano: "+savingsIndexEntityBase.getSavingsIndexId().getAno()+"\n"
-                +"Mês: "+savingsIndexEntityBase.getSavingsIndexId().getMes()+"\n"
-                +"Valor: "+savingsIndexEntityBase.getValue();
+        return "Ano: " + savingsIndexEntityBase.getSavingsIndexId().getAno() + "\n"
+                + "Mês: " + savingsIndexEntityBase.getSavingsIndexId().getMes() + "\n"
+                + "Valor: " + savingsIndexEntityBase.getValue();
     }
 
     private SavingsIndexEntity getSavingsIndexEntityInDataBase() throws Exception {
-        try{
+        try {
             SavingsIndexId savingsIndexId = new SavingsIndexId();
             savingsIndexId.setAno(2000);
             savingsIndexId.setMes(10);
             Optional<SavingsIndexEntity> byId = savingsIndexRepository.findById(savingsIndexId);
 
             SavingsIndexEntity savingsIndexEntity = byId.get();
-        }catch (Exception e){
+        } catch (Exception e) {
             savingsIndex();
         }
 
@@ -72,8 +72,8 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
         SavingsIndexEntity savingsIndexEntityBase = lastIndex.get(0);
         int mesBase = savingsIndexEntityBase.getSavingsIndexId().getMes();
 
-        for (SavingsIndexEntity savingsIndex: lastIndex) {
-            if(savingsIndex.getSavingsIndexId().getMes() >= mesBase){
+        for (SavingsIndexEntity savingsIndex : lastIndex) {
+            if (savingsIndex.getSavingsIndexId().getMes() >= mesBase) {
                 savingsIndexEntityBase = savingsIndex;
                 mesBase = savingsIndex.getSavingsIndexId().getMes();
             }
@@ -82,35 +82,52 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
     }
 
     @Override
-    public String saveSavingsIndex(Integer ano, Integer mes, Float valor) throws Exception {
+    public String saveSavingsIndex(Integer ano, Integer mes, Double valor) throws Exception {
         SavingsIndexEntity lastIndex = getSavingsIndexEntityInDataBase();
         int ultimoAno = lastIndex.getSavingsIndexId().getAno();
         int ultimoMes = lastIndex.getSavingsIndexId().getMes();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(configProperties.getFileIndex(), true));
+        SavingsIndexId savingsIndexId = new SavingsIndexId();
+        savingsIndexId.setMes(mes);
+        savingsIndexId.setAno(ano);
+        SavingsIndexEntity savingsIndexEntity = new SavingsIndexEntity();
+        savingsIndexEntity.setSavingsIndexId(savingsIndexId);
+        savingsIndexEntity.setValue(valor);
 
-        if(ultimoMes == 12){
-            if(ano - ultimoAno == 1){
-                if(mes == 1){
-                    BufferedWriter br = new BufferedWriter(new FileWriter(configProperties.getFileIndex()));
-                    int x=0;
+        try {
+            if (ultimoMes == 12) {
+                if (ano - ultimoAno == 1) {
+                    if (mes == 1) {
+                        bw.write("0" + mes + "/" + ano + "/" + valor);
+                        bw.newLine();
+                        bw.close();
+                        savingsIndexRepository.save(savingsIndexEntity);
+                        return "Registro salvo!";
+                    }
+                }
+            } else if (mes > 0 && mes < 12) {
+                if (ano == ultimoAno) {
+                    if (mes - ultimoMes == 1) {
+
+                        if (mes < 10) {
+                            bw.write("0" + mes + "/" + ano + "/" + valor);
+
+                        } else {
+                            bw.write(mes + "/" + ano + "/" + valor);
+                        }
+                        bw.newLine();
+                        bw.close();
+                        savingsIndexRepository.save(savingsIndexEntity);
+                        return "Registro salvo!";
+                    }
                 }
             }
-        } else if(mes > 0 && mes < 12){
-            if(ano == ultimoAno){
-                if(mes - ultimoMes == 1){
-                    //BufferedWriter bw = new BufferedWriter(new FileWriter(configProperties.getFileIndex()));
-                    FileWriter fileWriter = new FileWriter(configProperties.getFileIndex());
-                    fileWriter.append(mes+"/"+ano+"/"+valor);
-
-
-
-//                    bw.newLine();
-//                    bw.append(mes+"/"+ano+"/"+valor);
-                    int x=0;
-                }
-            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
 
-        return "Valor para essa data já existe";
+
+        return "Já existe valor para essa data ou não é o próximo mês!";
 
     }
 
