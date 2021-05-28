@@ -27,8 +27,11 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileIndex()));
             String linha;
 
-            while ((linha = br.readLine()) != null) {
-                saveInDb(linha);
+            while (((linha = br.readLine()) != null)) {
+                if(!linha.isEmpty()){
+                    saveInDb(linha);
+                }
+
             }
 
         } catch (Exception e) {
@@ -132,14 +135,19 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
     }
 
     private void saveInDb(String linha) throws Exception {
-        String[] split = linha.split("/");
-        SavingsIndexEntity savingsIndexEntity = new SavingsIndexEntity();
-        SavingsIndexId savingsIndexId = new SavingsIndexId();
-        savingsIndexId.setMes(Integer.parseInt(split[0]));
-        savingsIndexId.setAno(Integer.parseInt(split[1]));
-        savingsIndexEntity.setSavingsIndexId(savingsIndexId);
-        savingsIndexEntity.setValue(Double.parseDouble(split[2]));
-        savingsIndexRepository.save(savingsIndexEntity);
+        try {
+            String[] split = linha.split("/");
+            SavingsIndexEntity savingsIndexEntity = new SavingsIndexEntity();
+            SavingsIndexId savingsIndexId = new SavingsIndexId();
+            savingsIndexId.setMes(Integer.parseInt(split[0]));
+            savingsIndexId.setAno(Integer.parseInt(split[1]));
+            savingsIndexEntity.setSavingsIndexId(savingsIndexId);
+            savingsIndexEntity.setValue(Double.parseDouble(split[2]));
+            savingsIndexRepository.save(savingsIndexEntity);
+        } catch (Exception e){
+            throw new Exception("Exception "+linha+" message{}");
+        }
+
     }
 
 
