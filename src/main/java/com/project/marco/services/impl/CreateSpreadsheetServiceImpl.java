@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,7 +86,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
     }
 
     private void makeCalc(WritableSheet sheet, int anoInicioProcesso, int mesInicioProcesso) throws Exception {
-
+        index = 0;
         try {
             List<RestatementEntity> restatements = restatementRepository.findAll();
             List<RestatementEntity> restatementsValid = restatements
@@ -107,7 +106,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
             int row = 4;
             int numberRow;
-            Double value = 1d;
+            Double valueIndex = 1d;
 
             WritableCellFormat cellFormatCifra = new WritableCellFormat();
             cellFormatCifra.setAlignment(Alignment.CENTRE);
@@ -121,15 +120,15 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                 SavingsIndexId savingsIndexId = savingsIndexEntityAux.getSavingsIndexId();
                 String data = savingsIndexId.getMes() + "/" + savingsIndexId.getAno();
 
-                value = getTaxReferencial(value, savingsIndexId);
+                valueIndex = getTaxReferencial(valueIndex, savingsIndexId);
 
                 if (!(savingsIndexId.getMes() == MONTH_START_REAL && savingsIndexId.getAno() == YEAR_START_REAL)) {
-                    makeCalcFromReal(sheet, row, numberRow, value, cellFormatCifra, writableCell, cellFormat2, data);
+                    makeCalcFromReal(sheet, row, numberRow, valueIndex, cellFormatCifra, writableCell, cellFormat2, data);
                     if (savingsIndexId.getAno() >= anoInicioProcesso) {
                         int size = restatementsValid.size();
-                        if(index< size){
+                        if (index < size) {
                             makeCalcFromStartOfLawsuit(sheet, row, numberRow,
-                                    value, cellFormatCifra, cellFormat2, data,
+                                    valueIndex, cellFormatCifra, cellFormat2, data,
                                     restatementsValid.get(index).getFactorMes(),
                                     firstIteration, savingsIndexId.getAno(),
                                     savingsIndexId.getMes(), anoInicioProcesso, mesInicioProcesso);
@@ -138,52 +137,52 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                     row++;
                 }
 
-                value = savingsIndexEntityAux.getValue();
+                valueIndex = savingsIndexEntityAux.getValue();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
 
     }
 
-    private Double getTaxReferencial(Double value, SavingsIndexId savingsIndexId) {
-        if(savingsIndexId.getAno() == 2017){
-            if(savingsIndexId.getMes() >= 10){
-                value = 0.5d;
+    private Double getTaxReferencial(Double valueIndex, SavingsIndexId savingsIndexId) {
+        if (savingsIndexId.getAno() == 2017) {
+            if (savingsIndexId.getMes() >= 10) {
+                valueIndex = 0.5d;
             }
-        } else if(savingsIndexId.getAno() > 2017) {
-            value = 0.5d;
+        } else if (savingsIndexId.getAno() > 2017) {
+            valueIndex = 0.5d;
         }
-        return value;
+        return valueIndex;
     }
 
-    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double value,
+    private void makeCalcFromStartOfLawsuit(WritableSheet sheet, int row, int numberRow, Double valueIndex,
                                             WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2,
                                             String data, Double factorMes, boolean firstIteration, int anoFluxo,
-                                            int mesFluxo, int anoInicio, int mesInicio) throws Exception {
+                                            int mesFluxo, int anoInicioProcesso, int mesInicioProcesso) throws Exception {
 
 
-        if (anoFluxo == anoInicio) {
-            if (mesFluxo == mesInicio) {
+        if (anoFluxo == anoInicioProcesso) {
+            if (mesFluxo == mesInicioProcesso) {
                 index++;
-                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
+                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, valueIndex, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
 
-            } else if (mesFluxo > mesInicio) {
+            } else if (mesFluxo > mesInicioProcesso) {
                 index++;
                 firstIteration = false;
-                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
+                makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, valueIndex, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
 
             }
         } else {
             index++;
             firstIteration = false;
-            makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, value, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
+            makeCalcFromStartOfLawsuitFact(sheet, row, numberRow, valueIndex, cellFormatCifra, cellFormat2, data, factorMes, firstIteration);
         }
 
     }
 
     private void makeCalcFromStartOfLawsuitFact(WritableSheet sheet, int row, int numberRow,
-                                                Double value, WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2,
+                                                Double valueIndex, WritableCellFormat cellFormatCifra, WritableCellFormat cellFormat2,
                                                 String data, Double factorMes, boolean firstIteration) throws Exception {
 
         try {
@@ -202,7 +201,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                 sheet.addCell(formula);
             }
 
-            Number number = new Number(3, row, value);
+            Number number = new Number(3, row, valueIndex);
             sheet.addCell(number);
 
             formula = new Formula(4, row, "C" + numberRow + "*(D" + numberRow + "/100)", cellFormat2);
@@ -211,7 +210,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             formula = new Formula(5, row, "E" + numberRow + "+C" + numberRow, cellFormat2);
             sheet.addCell(formula);
 
-            if(!(factorMes == 0)){
+            if (!(factorMes == 0)) {
                 number = new Number(6, row, factorMes);
                 sheet.addCell(number);
 
@@ -222,17 +221,17 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                 sheet.addCell(formula);
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
 
     }
 
     private void makeCalcFromReal(WritableSheet sheet, int row, int numberRow,
-                                  Double value, WritableCellFormat cellFormatCifra, WritableCell writableCell,
+                                  Double valueIndex, WritableCellFormat cellFormatCifra, WritableCell writableCell,
                                   WritableCellFormat cellFormat2, String data) throws Exception {
 
-        try{
+        try {
             Label label = new Label(0, row, data);
             sheet.addCell(label);
 
@@ -248,7 +247,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
                 sheet.addCell(formula);
             }
 
-            Number number = new Number(3, row, value);
+            Number number = new Number(3, row, valueIndex);
             sheet.addCell(number);
 
             formula = new Formula(4, row, "C" + numberRow + "*(D" + numberRow + "/100)", cellFormat2);
@@ -256,7 +255,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
 
             formula = new Formula(5, row, "E" + numberRow + "+C" + numberRow, cellFormat2);
             sheet.addCell(formula);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
 
@@ -334,7 +333,7 @@ public class CreateSpreadsheetServiceImpl implements CreateSpreadsheetService {
             sheet.addCell(l13);
             sheet.addCell(l14);
             sheet.addCell(l15);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
 
