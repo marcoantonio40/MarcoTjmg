@@ -29,23 +29,22 @@ public class TjmgServiceImpl implements TjmgService {
     private TjmgUtils tjmgUtils;
 
 
-
     @Override
     public HttpStatus updloadPdf(MultipartFile multipartFile, int anoDocumento, int mesDocumento, int anoInicioProcesso, int mesInicioProcesso) {
-        try{
-            String nameFile = tjmgUtils.createNameFile(configProperties.getFileDestino()+multipartFile.getOriginalFilename(), ".pdf");
+        try {
+            String nameFile = tjmgUtils.createNameFile(configProperties.getFileDestino() + multipartFile.getOriginalFilename(), ".pdf");
             multipartFile.transferTo(new File(nameFile));
-            File file = new File(configProperties.getFileDestino()+"/"+multipartFile.getOriginalFilename());
-            readerPdf(file.getAbsolutePath(), anoDocumento, mesDocumento, anoInicioProcesso, mesInicioProcesso );
+            File file = new File(configProperties.getFileDestino() + "/" + multipartFile.getOriginalFilename());
+            readerPdf(file.getAbsolutePath(), anoDocumento, mesDocumento, anoInicioProcesso, mesInicioProcesso);
 
             return HttpStatus.OK;
-        } catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.NOT_FOUND;
         }
     }
 
 
-    public HttpStatus readerPdf(String fileName, int anoDocumento, int mesDocumento, int anoInicioProcesso, int mesInicioProcesso){
+    public HttpStatus readerPdf(String fileName, int anoDocumento, int mesDocumento, int anoInicioProcesso, int mesInicioProcesso) {
         PdfReader reader;
         try {
             reader = new PdfReader(fileName);
@@ -53,7 +52,7 @@ public class TjmgServiceImpl implements TjmgService {
             int numberOfPages = reader.getNumberOfPages();
             int aux = 1;
 
-            while (numberOfPages > aux){
+            while (numberOfPages > aux) {
                 String textFromPage = PdfTextExtractor.getTextFromPage(reader, aux);
                 bufferWriter.append(textFromPage);
                 aux++;

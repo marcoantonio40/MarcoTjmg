@@ -28,7 +28,7 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
             String linha;
 
             while (((linha = br.readLine()) != null)) {
-                if(!linha.isEmpty()){
+                if (!linha.isEmpty()) {
                     saveInDb(linha);
                 }
 
@@ -108,7 +108,7 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
                         return "Registro salvo!";
                     }
                 }
-            } else if (mes > 0 && mes < 12) {
+            } else if (mes > 0 && mes <= 12) {
                 if (ano == ultimoAno) {
                     if (mes - ultimoMes == 1) {
 
@@ -144,8 +144,8 @@ public class SavingsIndexServiceImpl implements SavingsIndexService {
             savingsIndexEntity.setSavingsIndexId(savingsIndexId);
             savingsIndexEntity.setValue(Double.parseDouble(split[2]));
             savingsIndexRepository.save(savingsIndexEntity);
-        } catch (Exception e){
-            throw new Exception("Exception "+linha+" message{}");
+        } catch (Exception e) {
+            throw new Exception("Exception " + linha + " message{}");
         }
 
     }
