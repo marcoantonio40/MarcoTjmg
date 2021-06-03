@@ -10,7 +10,7 @@ import java.util.Date;
 public class TjmgUtils {
 
 
-    public String createNameFile(String fileXls) {
+    public String createNameFile(String fileXls, String extensao) {
 
         Date data = new Date();
         final Instant dataName = data.toInstant();
@@ -19,8 +19,8 @@ public class TjmgUtils {
         if(!Paths.get(fileXls).toFile().isFile()){
             return fileXls;
         } else {
-            String newNamwFile = fileXls.replace(".xls", dataNameCorrect + ".xls");
-            return createNameFile(newNamwFile);
+            String newNamwFile = fileXls.replace(extensao, dataNameCorrect + extensao);
+            return createNameFile(newNamwFile, extensao);
         }
 
     }

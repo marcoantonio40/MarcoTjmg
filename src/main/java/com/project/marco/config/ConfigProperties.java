@@ -20,4 +20,6 @@ public class ConfigProperties {
     @Value("${file.index.txt}")
     private String fileIndex;
 
+    @Value("${file.atualizacao.destino}")
+    private String fileDestino;
 }

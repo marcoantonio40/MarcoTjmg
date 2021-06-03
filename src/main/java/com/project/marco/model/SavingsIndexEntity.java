@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class SavingsIndexEntity {
+public class SavingsIndexEntity implements Serializable {
 
     @EmbeddedId
     private SavingsIndexId savingsIndexId;

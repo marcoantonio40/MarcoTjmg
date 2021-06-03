@@ -4,6 +4,7 @@ import com.project.marco.config.ConfigProperties;
 import com.project.marco.model.RestatementEntity;
 import com.project.marco.model.RestatementId;
 import com.project.marco.repository.RestatementRepository;
+import com.project.marco.services.CreateSpreadsheetService;
 import com.project.marco.services.PatternService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,37 +27,39 @@ public class PatternServiceImpl implements PatternService {
     @Autowired
     private RestatementRepository repository;
 
+    @Autowired
+    private CreateSpreadsheetService createSpreadsheetService;
+
     @Override
-    public HttpStatus formatToPattern() {
+    public HttpStatus formatToPattern(int anoDocumento, int mesDocumento, int anoInicioProcesso, int mesInicioProcesso) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configProperties.getFileTxt()));
             String linha = br.readLine();
-            int anoDoc = 2021;
-            int mesDoc = 3;
             while ((linha = br.readLine()) != null) {
-                checksLineIsValid(linha, anoDoc, mesDoc);
+                checksLineIsValid(linha, anoDocumento, mesDocumento);
             }
 
             br.close();
+            createSpreadsheetService.createSpreadsheet(anoInicioProcesso, mesInicioProcesso);
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.NOT_FOUND;
         }
     }
 
-    private void checksLineIsValid(String linha, int anoDoc, int mesDoc) {
+    private void checksLineIsValid(String linha, int anoDocumento, int mesDocumento) {
         String year = linha.substring(0, 4);
         try {
             int yearValid = Integer.parseInt(year);
             if (yearValid >= INIT_YEAR && yearValid <= LocalDateTime.now().getYear()) {
-                extractToRestatement(linha, yearValid, anoDoc, mesDoc);
+                extractToRestatement(linha, yearValid, anoDocumento, mesDocumento);
             }
         } catch (Exception e) {
         }
 
     }
 
-    private void extractToRestatement(String linha, int yearValid, int anoDoc, int mesDoc) {
+    private void extractToRestatement(String linha, int yearValid, int anoDocumento, int mesDocumento) {
         int x = 0;
         String newLineWithoutYearsWithComma = linha.substring(5, (linha.length() - 5));
         String newLineWithoutYearsWithPoint = newLineWithoutYearsWithComma.replace(",", ".");
@@ -65,7 +68,7 @@ public class PatternServiceImpl implements PatternService {
             monthsString = fillVector(monthsString);
         }
         Double[] monthsDouble = toDouble(monthsString);
-        prepareToSave(monthsDouble, yearValid, anoDoc, mesDoc);
+        prepareToSave(monthsDouble, yearValid, anoDocumento, mesDocumento);
 
     }
 
@@ -98,9 +101,9 @@ public class PatternServiceImpl implements PatternService {
         return monthsDouble;
     }
 
-    private void prepareToSave(Double[] monthsDouble, int yearValid, int anoDoc, int mesDoc) {
+    private void prepareToSave(Double[] monthsDouble, int yearValid, int anoDocumento, int mesDocumento) {
         RestatementEntity restatementEntity = new RestatementEntity();
-        RestatementId restatementId = createId(yearValid, anoDoc, mesDoc);
+        RestatementId restatementId = createId(yearValid, anoDocumento, mesDocumento);
         if (yearValid == INIT_YEAR) {
             createRestament1964(monthsDouble, restatementEntity, restatementId);
 
@@ -130,12 +133,12 @@ public class PatternServiceImpl implements PatternService {
         }
     }
 
-    private RestatementId createId(int yearValid, int anoDoc, int mesDoc) {
+    private RestatementId createId(int yearValid, int anoDocumento, int mesDocumento) {
         try {
             RestatementId restatementId = new RestatementId();
             restatementId.setYearFactor(yearValid);
-            restatementId.setMonthDoc(mesDoc);
-            restatementId.setYearDoc(anoDoc);
+            restatementId.setMonthDoc(mesDocumento);
+            restatementId.setYearDoc(anoDocumento);
             return restatementId;
         } catch (Exception e) {
             System.out.println(e.getMessage());
